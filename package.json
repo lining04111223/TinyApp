@@ -16,5 +16,8 @@
   "bugs": {
     "url": "https://github.com/lining04111223/TinyApp/issues"
   },
-  "homepage": "https://github.com/lining04111223/TinyApp#readme"
+  "homepage": "https://github.com/lining04111223/TinyApp#readme",
+  "dependencies": {
+    "express": "^4.18.1"
+  }
 }

@@ -39,9 +39,20 @@ app.get("/urls/new", (req, res) => {
 });
 
 app.get("/urls/:id", (req, res) => {
-  const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id ]};
+  const longURL = urlDatabase[req.params.id ];
+  const templateVars = { id: req.params.id, longURL: longURL};
   res.render("urls_show", templateVars);
+  console.log('longurl1',longURL);
 });
+
+app.get("/u/:id", (req, res) => {
+  const longURL = urlDatabase[req.params.id ];
+  const templateVars = { id: req.params.id, longURL: longURL};
+  res.redirect(longURL);
+  console.log('longurl2',longURL);
+});
+
+
 
 app.get("/", (req, res) => {
   res.send("Hello!");

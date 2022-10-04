@@ -1,13 +1,14 @@
 const express = require("express");
+const req = require("express/lib/request");
 const app = express();
-const morgan = require('morgan');
+//const morgan = require('morgan');
 const PORT = 8080;
 
 app.set("view engine", "ejs");
 
 //---------------middleware---------------------
 app.use(express.urlencoded({ extended: true }));
-app.use(morgan('dev'));
+//app.use(morgan('dev'));
 
 
 //--------------function------------------------------
@@ -74,9 +75,12 @@ app.post("/urls", (req, res) => {
   const randomString = generateRandomString();
   urlDatabase[randomString] = req.body.longURL;
   res.redirect(`/urls/${randomString}`);
-
 });
 
+app.post("/urls/:id/delete", (req, res) => {
+delete urlDatabase[req.params.id];
+  res.redirect(`/urls`);
+});
 
 
 app.listen(PORT, () => {

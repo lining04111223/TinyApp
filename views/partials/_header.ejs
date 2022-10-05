@@ -19,18 +19,27 @@
       </div>
     </div>
 
-    <form class="form-inline" action="/login" method="POST">
-      <div class="form-group mb-2 text-center m-auto">
-        <input
-          class="form-control"
-          type="text"
-          name="username"
-          placeholder="username"
-          style="width: 200px; margin: 1em"
-        />
-        <button type="submit" class="btn btn-primary">Login</button>
-      </div>
-      </form>
+    <% if(username){ %>
+      <form class="form-inline" action="/logout" method="POST">
+        <div class="form-group mb-2 text-center m-auto">
+          <label>Logged in as:<%= username %></label>
+          <button type="submit" class="btn btn-primary">Logout</button>
+        </div>
+        </form>
+      <% } else{ %>  
+          <form class="form-inline" action="/login" method="POST">
+            <div class="form-group mb-2 text-center m-auto">
+              <input
+                class="form-control"
+                type="text"
+                name="username"
+                placeholder="username"
+                style="width: 200px; margin: 1em"
+              />
+              <button type="submit" class="btn btn-primary">Login</button>
+            </div>
+            </form>
+     <% } %>
 
 
   </nav>

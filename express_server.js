@@ -91,11 +91,13 @@ app.post("/urls/:id", (req, res) => {
 
 app.post("/login", (req, res) => {
 
-  res.cookie("username", req.body);
-  console.log("cookie",req.body);
+  res.cookie("username", req.body.username);
+  console.log("cookie",req.body.username);
 
   res.redirect(`/urls`);
 });
+
+
 
 
 //------------------listen-------------------------

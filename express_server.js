@@ -13,14 +13,19 @@ app.use(cookieParser())
 
 
 //--------------function------------------------------
-const generateRandomString = function () {
-  let outputstring = "";
-  let random =
-    "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
-  for (let i = 0; i < 6; i++)
-    outputstring += random.charAt(Math.floor(Math.random() * random.length));
-  return outputstring;
+const generateRandomString = () => {
+  return Math.random().toString(36).substring(2, 8);
 };
+
+const getUserByEmail = function (email) {
+  for (let userID in users) {
+    if (users[userID].email === email) {
+      return users[userID];
+    }
+  }
+  return null;
+}
+
 
 //-------------------database----------------------------------
 
@@ -123,6 +128,17 @@ app.get("/register", (req, res) => {
 });
 
 app.post("/register", (req, res) => {
+  const email = req.body.email;
+  const password = req.body.password;
+  //Registration Errors
+  if (!email || !password) {
+    return res.status(400).send('Please insert email and password');
+  }
+  const databaseUser = getUserByEmail(email);
+  if (databaseUser) {
+    return res.status(400).send('Email is already used');
+  }
+
   const userID = generateRandomString();
   res.cookie("user_id", userID);
   console.log("user_id", req.cookies["user_id"]);
@@ -133,6 +149,9 @@ app.post("/register", (req, res) => {
     password: req.body.password,
   },
   console.log(users);
+
+
+
 
   res.redirect(`/urls`);
 });

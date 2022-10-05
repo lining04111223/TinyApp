@@ -31,7 +31,7 @@ const urlDatabase = {
 
 //----------------------get requests----------------------------
 app.get("/urls",(req, res) => {
-const templateVars = {urls: urlDatabase};
+const templateVars = {urls: urlDatabase, username: req.cookies["username"]};
   res.render("urls_index", templateVars);
 })
 
@@ -41,14 +41,14 @@ app.get("/urls/new", (req, res) => {
 
 app.get("/urls/:id", (req, res) => {
   const longURL = urlDatabase[req.params.id ];
-  const templateVars = { id: req.params.id, longURL: longURL};
+  const templateVars = { id: req.params.id, longURL: longURL, username: req.cookies["username"]};
   res.render("urls_show", templateVars);
   console.log('longurl1',longURL);
 });
 
 app.get("/u/:id", (req, res) => {
   const longURL = urlDatabase[req.params.id ];
-  const templateVars = { id: req.params.id, longURL: longURL};
+  const templateVars = { id: req.params.id, longURL: longURL, username: req.cookies["username"]};
   res.redirect(longURL);
   console.log('longurl2',longURL);
 });
@@ -64,7 +64,7 @@ app.get("/urls.json", (req, res) => {
 });
 
 app.get("/hello", (req, res) => {
-  const templateVars = { greeting: "Hello World!" };
+  const templateVars = { greeting: "Hello World!" , username: req.cookies["username"]};
   res.render("hello_world", templateVars);
 });
 

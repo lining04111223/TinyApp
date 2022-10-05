@@ -1,6 +1,6 @@
 const express = require("express");
-const req = require("express/lib/request");
 const app = express();
+const cookieParser = require('cookie-parser')
 //const morgan = require('morgan');
 const PORT = 8080;
 
@@ -8,6 +8,7 @@ app.set("view engine", "ejs");
 
 //---------------middleware---------------------
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser())
 //app.use(morgan('dev'));
 
 
@@ -86,7 +87,18 @@ app.post("/urls/:id", (req, res) => {
   res.redirect(`/urls`);
 });
 
+//--------------------login-----------------
 
+app.post("/login", (req, res) => {
+
+  res.cookie("username", req.body);
+  console.log("cookie",req.body);
+
+  res.redirect(`/urls`);
+});
+
+
+//------------------listen-------------------------
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });

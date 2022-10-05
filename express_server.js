@@ -44,25 +44,25 @@ const users = {
 
 //----------------------get requests----------------------------
 app.get("/urls",(req, res) => {
-const templateVars = {urls: urlDatabase, username: req.cookies["username"]};
+const templateVars = {urls: urlDatabase, user: users[req.cookies["user_id"]]};
   res.render("urls_index", templateVars);
 })
 
 app.get("/urls/new", (req, res) => {
-  const templateVars = { username: req.cookies["username"]};
+  const templateVars = { user: users[req.cookies["user_id"]]};
   res.render("urls_new", templateVars);
 });
 
 app.get("/urls/:id", (req, res) => {
   const longURL = urlDatabase[req.params.id ];
-  const templateVars = { id: req.params.id, longURL: longURL, username: req.cookies["username"]};
+  const templateVars = { id: req.params.id, longURL: longURL, user: users[req.cookies["user_id"]]};
   res.render("urls_show", templateVars);
   console.log('longurl1',longURL);
 });
 
 app.get("/u/:id", (req, res) => {
   const longURL = urlDatabase[req.params.id ];
-  const templateVars = { id: req.params.id, longURL: longURL, username: req.cookies["username"]};
+  const templateVars = { id: req.params.id, longURL: longURL, user: users[req.cookies["user_id"]]};
   res.redirect(longURL);
   console.log('longurl2',longURL);
 });
@@ -78,7 +78,7 @@ app.get("/urls.json", (req, res) => {
 });
 
 app.get("/hello", (req, res) => {
-  const templateVars = { greeting: "Hello World!" , username: req.cookies["username"]};
+  const templateVars = { greeting: "Hello World!" , user: users[req.cookies["user_id"]]};
   res.render("hello_world", templateVars);
 });
 
@@ -105,26 +105,28 @@ app.post("/urls/:id", (req, res) => {
 
 app.post("/login", (req, res) => {
 
-  res.cookie("username", req.body.username);
-  console.log("cookie",req.body.username);
+  //res.cookie("username", req.body.username);
+  //console.log("cookie",req.body.username);
 
   res.redirect(`/urls`);
 });
 
 app.post("/logout", (req, res) => {
 
-  res.clearCookie("username");
+  res.clearCookie("user_id");
   res.redirect(`/urls`);
 });
 
 app.get("/register", (req, res) => {
-  const templateVars = { username: req.cookies["username"]};
+  const templateVars = { user: users[req.cookies["user_id"]]};
   res.render("register", templateVars);
 });
 
 app.post("/register", (req, res) => {
   const userID = generateRandomString();
   res.cookie("user_id", userID);
+  console.log("user_id", req.cookies["user_id"]);
+  console.log("userID", userID);
   users[userID]={
     id: userID,
     email: req.body.email,

@@ -1,6 +1,6 @@
 const express = require("express");
 const app = express();
-const cookieParser = require('cookie-parser')
+const cookieSession = require('cookie-session')
 const bcrypt = require("bcryptjs");
 //const morgan = require('morgan');
 const PORT = 8080;
@@ -9,9 +9,12 @@ app.set("view engine", "ejs");
 
 //---------------middleware---------------------
 app.use(express.urlencoded({ extended: true }));
-app.use(cookieParser())
+app.use(cookieSession({
+  name: 'session',
+  keys: ['secret'],
+  maxAge: 24 * 60 * 60 * 1000 // 24 hours
+}))
 //app.use(morgan('dev'));
-
 
 //--------------function------------------------------
 const generateRandomString = () => {
@@ -64,29 +67,29 @@ const users = {
 
 //----------------------get requests----------------------------
 app.get("/urls",(req, res) => {
-  if(!req.cookies["user_id"]){
+  if(!req.session.user_id){
     return res.send("Please log in!")};
     
-  const templateVars = {urls:urlsForUser(req.cookies["user_id"]) , user: users[req.cookies["user_id"]]};
-  console.log("user--id",req.cookies["user_id"]);
+  const templateVars = {urls:urlsForUser(req.session.user_id) , user: users[req.session.user_id]};
+  console.log("user--id",req.session.user_id);
   res.render("urls_index", templateVars);
 })
 
 app.get("/urls/new", (req, res) => {
-  if(!req.cookies["user_id"]){
+  if(!req.session.user_id){
     return res.redirect("/login")};
-  const templateVars = { user: users[req.cookies["user_id"]]};
+  const templateVars = { user: users[req.session.user_id]};
   res.render("urls_new", templateVars);
 });
 
 app.get("/urls/:id", (req, res) => {
-  if(!req.cookies["user_id"]){
+  if(!req.session.user_id){
     return res.send("Please log in!")};
-  if(Object.keys(urlsForUser(req.cookies["user_id"])).length===0){
+  if(Object.keys(urlsForUser(req.session.user_id)).length===0){
     return res.status(400).send("URL does not belong to you!")
     }
   const longURL = urlDatabase[req.params.id].longURL;
-  const templateVars = { id: req.params.id, longURL: longURL, user: users[req.cookies["user_id"]]};
+  const templateVars = { id: req.params.id, longURL: longURL, user: users[req.session.user_id]};
   res.render("urls_show", templateVars);
   console.log('longurl1',longURL);
 });
@@ -96,7 +99,7 @@ app.get("/u/:id", (req, res) => {
   if(!longURL){
     return res.send("ID don't exit!");
   }
-  const templateVars = { id: req.params.id, longURL: longURL, user: users[req.cookies["user_id"]]};
+  const templateVars = { id: req.params.id, longURL: longURL, user: users[req.session.user_id]};
   res.redirect(longURL);
   console.log('longurl2',longURL);
 });
@@ -107,19 +110,19 @@ app.get("/urls.json", (req, res) => {
 });
 
 app.get("/hello", (req, res) => {
-  const templateVars = { greeting: "Hello World!" , user: users[req.cookies["user_id"]]};
+  const templateVars = { greeting: "Hello World!" , user: users[req.session.user_id]};
   res.render("hello_world", templateVars);
 });
 
 //----------------------post requests--------------------
 app.post("/urls", (req, res) => {
-  if(!req.cookies["user_id"]){
+  if(!req.session.user_id){
    return res.send("Please log in!")};
   console.log(req.body); // Log the POST request body to the console
   const randomString = generateRandomString();
   urlDatabase[randomString] = {
     longURL: req.body.longURL,
-    userID: req.cookies["user_id"],
+    userID: req.session.user_id,
   }
   console.log("req.body",req.body);
   console.log("urldatabase",urlDatabase);
@@ -127,7 +130,7 @@ app.post("/urls", (req, res) => {
 });
 
 app.post("/urls/:id/delete", (req, res) => {
-  if(Object.keys(urlsForUser(req.cookies["user_id"])).length===0){
+  if(Object.keys(urlsForUser(req.session.user_id)).length===0){
     return res.status(400).send("URL does not belong to you!")
     }
   delete urlDatabase[req.params.id];
@@ -135,7 +138,7 @@ app.post("/urls/:id/delete", (req, res) => {
 });
 
 app.post("/urls/:id", (req, res) => {
-  if(Object.keys(urlsForUser(req.cookies["user_id"])).length===0){
+  if(Object.keys(urlsForUser(req.session.user_id)).length===0){
     return res.status(400).send("URL does not belong to you!")
     }
   urlDatabase[req.params.id ].longURL = req.body.longURL;
@@ -144,10 +147,10 @@ app.post("/urls/:id", (req, res) => {
 
 //--------------------login-register-----------------
 app.get("/login", (req, res) => {
-  if(req.cookies["user_id"]){
+  if(req.session.user_id){
   return res.redirect(`/urls`)};
 
-  const templateVars = { user: users[req.cookies["user_id"]]};
+  const templateVars = { user: users[req.session.user_id]};
   res.render("login", templateVars);
 });
 
@@ -167,20 +170,20 @@ app.post("/login", (req, res) => {
   if (!ckeckpassword) {
     return res.status(403).send('Password is not correct!');
   }
-  res.cookie("user_id", databaseUser.id);
+  req.session.user_id = databaseUser.id;
   res.redirect(`/urls`);
 });
 
 app.post("/logout", (req, res) => {
 
-  res.clearCookie("user_id");
+  req.session = null;
   res.redirect(`/urls`);
 });
 
 app.get("/register", (req, res) => {
-    if(req.cookies["user_id"]){
+    if(req.session.user_id){
     return res.redirect(`/urls`)};
-    const templateVars = { user: users[req.cookies["user_id"]]};
+    const templateVars = { user: users[req.session.user_id]};
   res.render("register", templateVars);
 });
 
@@ -199,8 +202,8 @@ app.post("/register", (req, res) => {
   }
 
   const userID = generateRandomString();
-  res.cookie("user_id", userID);
-  console.log("user_id", req.cookies["user_id"]);
+  req.session.user_id = userID;
+  console.log("user_id", req.session.user_id);
   console.log("userID", userID);
   users[userID]={
     id: userID,

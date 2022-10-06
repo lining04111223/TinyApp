@@ -22,14 +22,14 @@
     <% if(user){ %>
       <form class="form-inline" action="/logout" method="POST">
         <div class="form-group mb-2 text-center m-auto">
-          <label>Logged in as:<%= user.email %></label>
+          <label>Logged in As: <%= user.email %>!</label>
           <button type="submit" class="btn btn-primary">Logout</button>
         </div>
         </form>
       <% } else{ %>  
             <div class="form-group mb-2 text-center m-auto">
-              <a class="navbar-brand" href="/register">Register</a>
               <a class="navbar-brand" href="/login">Login</a>
+              <a class="navbar-brand" href="/register">Register</a>
             </div>
      <% } %>
 

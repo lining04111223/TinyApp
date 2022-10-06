@@ -26,7 +26,15 @@ const getUserByEmail = function (email) {
   return null;
 }
 
-
+const urlsForUser = function (userID) {
+  let obj ={};
+  for (let id in urlDatabase){
+    if(urlDatabase[id].userID === userID){
+    obj[id] = urlDatabase[id].longURL; 
+    }
+  }
+  return obj;
+}
 //-------------------database----------------------------------
 
 const urlDatabase = {
@@ -55,7 +63,11 @@ const users = {
 
 //----------------------get requests----------------------------
 app.get("/urls",(req, res) => {
-const templateVars = {urls: urlDatabase, user: users[req.cookies["user_id"]]};
+  if(!req.cookies["user_id"]){
+    return res.send("Please log in!")};
+    
+  const templateVars = {urls:urlsForUser(req.cookies["user_id"]) , user: users[req.cookies["user_id"]]};
+  console.log("user--id",req.cookies["user_id"]);
   res.render("urls_index", templateVars);
 })
 
@@ -67,6 +79,11 @@ app.get("/urls/new", (req, res) => {
 });
 
 app.get("/urls/:id", (req, res) => {
+  if(!req.cookies["user_id"]){
+    return res.send("Please log in!")};
+  if(Object.keys(urlsForUser(req.cookies["user_id"])).length===0){
+    return res.status(400).send("URL does not belong to you!")
+    }
   const longURL = urlDatabase[req.params.id ].longURL;
   const templateVars = { id: req.params.id, longURL: longURL, user: users[req.cookies["user_id"]]};
   res.render("urls_show", templateVars);
@@ -104,18 +121,30 @@ app.post("/urls", (req, res) => {
    return res.send("Please log in!")};
   console.log(req.body); // Log the POST request body to the console
   const randomString = generateRandomString();
-  urlDatabase[randomString] = req.body;
+  urlDatabase[randomString] = {
+    longURL: req.body.longURL,
+    userID: req.cookies["user_id"],
+  }
+  
+  console.log("req.body",req.body);
+  console.log("urldatabase",urlDatabase);
   res.redirect(`/urls/${randomString}`);
 });
 
 app.post("/urls/:id/delete", (req, res) => {
+  if(Object.keys(urlsForUser(req.cookies["user_id"])).length===0){
+    return res.status(400).send("URL does not belong to you!")
+    }
 delete urlDatabase[req.params.id];
   res.redirect(`/urls`);
 });
 
 app.post("/urls/:id", (req, res) => {
+  if(Object.keys(urlsForUser(req.cookies["user_id"])).length===0){
+    return res.status(400).send("URL does not belong to you!")
+    }
 
-  urlDatabase[req.params.id ] = req.body
+  urlDatabase[req.params.id ].longURL = req.body.longURL;
   res.redirect(`/urls`);
 });
 

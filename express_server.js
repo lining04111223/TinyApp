@@ -107,9 +107,15 @@ app.post("/urls/:id", (req, res) => {
 });
 
 //--------------------login-register-----------------
+app.get("/login", (req, res) => {
+  const templateVars = { user: users[req.cookies["user_id"]]};
+  res.render("login", templateVars);
+});
+
 
 app.post("/login", (req, res) => {
-
+  const email = req.body.email;
+  const password = req.body.password;
   //res.cookie("username", req.body.username);
   //console.log("cookie",req.body.username);
 
@@ -132,11 +138,11 @@ app.post("/register", (req, res) => {
   const password = req.body.password;
   //Registration Errors
   if (!email || !password) {
-    return res.status(400).send('Please insert email and password');
+    return res.status(400).send('Please insert email and password!');
   }
   const databaseUser = getUserByEmail(email);
   if (databaseUser) {
-    return res.status(400).send('Email is already used');
+    return res.status(400).send('Email is already used!');
   }
 
   const userID = generateRandomString();

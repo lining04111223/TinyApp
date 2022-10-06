@@ -116,9 +116,18 @@ app.get("/login", (req, res) => {
 app.post("/login", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
-  //res.cookie("username", req.body.username);
-  //console.log("cookie",req.body.username);
-
+  const databaseUser = getUserByEmail(email);
+  //Login Errors
+  if (!email || !password) {
+    return res.status(400).send('Please insert email and password!');
+  }
+  if (!databaseUser) {
+    return res.status(403).send('No user registered with the email!');
+  }
+  if (databaseUser.password !== password) {
+    return res.status(403).send('Password is not correct!');
+  }
+  res.cookie("user_id", databaseUser.id);
   res.redirect(`/urls`);
 });
 

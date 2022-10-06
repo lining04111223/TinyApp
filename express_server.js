@@ -1,6 +1,7 @@
 const express = require("express");
 const app = express();
 const cookieParser = require('cookie-parser')
+const bcrypt = require("bcryptjs");
 //const morgan = require('morgan');
 const PORT = 8080;
 
@@ -35,8 +36,8 @@ const urlsForUser = function (userID) {
   }
   return obj;
 }
-//-------------------database----------------------------------
 
+//-------------------database----------------------------------
 const urlDatabase = {
   b6UTxQ: {
     longURL: "https://www.tsn.ca",
@@ -84,14 +85,14 @@ app.get("/urls/:id", (req, res) => {
   if(Object.keys(urlsForUser(req.cookies["user_id"])).length===0){
     return res.status(400).send("URL does not belong to you!")
     }
-  const longURL = urlDatabase[req.params.id ].longURL;
+  const longURL = urlDatabase[req.params.id].longURL;
   const templateVars = { id: req.params.id, longURL: longURL, user: users[req.cookies["user_id"]]};
   res.render("urls_show", templateVars);
   console.log('longurl1',longURL);
 });
 
 app.get("/u/:id", (req, res) => {
-  const longURL = urlDatabase[req.params.id ].longURL; 
+  const longURL = urlDatabase[req.params.id].longURL; 
   if(!longURL){
     return res.send("ID don't exit!");
   }
@@ -100,12 +101,7 @@ app.get("/u/:id", (req, res) => {
   console.log('longurl2',longURL);
 });
 
-
-
-app.get("/", (req, res) => {
-  res.send("Hello!");
-});
-
+//------------------------first test----------------------
 app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
 });
@@ -125,7 +121,6 @@ app.post("/urls", (req, res) => {
     longURL: req.body.longURL,
     userID: req.cookies["user_id"],
   }
-  
   console.log("req.body",req.body);
   console.log("urldatabase",urlDatabase);
   res.redirect(`/urls/${randomString}`);
@@ -135,15 +130,14 @@ app.post("/urls/:id/delete", (req, res) => {
   if(Object.keys(urlsForUser(req.cookies["user_id"])).length===0){
     return res.status(400).send("URL does not belong to you!")
     }
-delete urlDatabase[req.params.id];
-  res.redirect(`/urls`);
+  delete urlDatabase[req.params.id];
+    res.redirect(`/urls`);
 });
 
 app.post("/urls/:id", (req, res) => {
   if(Object.keys(urlsForUser(req.cookies["user_id"])).length===0){
     return res.status(400).send("URL does not belong to you!")
     }
-
   urlDatabase[req.params.id ].longURL = req.body.longURL;
   res.redirect(`/urls`);
 });
@@ -155,15 +149,14 @@ app.get("/login", (req, res) => {
 
   const templateVars = { user: users[req.cookies["user_id"]]};
   res.render("login", templateVars);
-
-
 });
-
 
 app.post("/login", (req, res) => {
   const email = req.body.email;
-  const password = req.body.password;
+  const password = req.body.password;  
   const databaseUser = getUserByEmail(email);
+  const ckeckpassword = bcrypt.compareSync(password, databaseUser.password);
+
   //Login Errors
   if (!email || !password) {
     return res.status(400).send('Please insert email and password!');
@@ -171,7 +164,7 @@ app.post("/login", (req, res) => {
   if (!databaseUser) {
     return res.status(403).send('No user registered with the email!');
   }
-  if (databaseUser.password !== password) {
+  if (!ckeckpassword) {
     return res.status(403).send('Password is not correct!');
   }
   res.cookie("user_id", databaseUser.id);
@@ -194,8 +187,10 @@ app.get("/register", (req, res) => {
 app.post("/register", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
+  const salt = bcrypt.genSaltSync(10);
+  const hash = bcrypt.hashSync(password, salt);
   //Registration Errors
-  if (!email || !password) {
+  if (!email || !hash) {
     return res.status(400).send('Please insert email and password!');
   }
   const databaseUser = getUserByEmail(email);
@@ -209,8 +204,8 @@ app.post("/register", (req, res) => {
   console.log("userID", userID);
   users[userID]={
     id: userID,
-    email: req.body.email,
-    password: req.body.password,
+    email: email,
+    password: hash,
   },
   console.log(users);
   res.redirect(`/urls`);

@@ -30,8 +30,14 @@ const getUserByEmail = function (email) {
 //-------------------database----------------------------------
 
 const urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
+  b6UTxQ: {
+    longURL: "https://www.tsn.ca",
+    userID: "aJ48lW",
+  },
+  i3BoGr: {
+    longURL: "https://www.google.ca",
+    userID: "aJ48lW",
+  },
 };
 
 const users = {
@@ -61,14 +67,14 @@ app.get("/urls/new", (req, res) => {
 });
 
 app.get("/urls/:id", (req, res) => {
-  const longURL = urlDatabase[req.params.id ];
+  const longURL = urlDatabase[req.params.id ].longURL;
   const templateVars = { id: req.params.id, longURL: longURL, user: users[req.cookies["user_id"]]};
   res.render("urls_show", templateVars);
   console.log('longurl1',longURL);
 });
 
 app.get("/u/:id", (req, res) => {
-  const longURL = urlDatabase[req.params.id ]; 
+  const longURL = urlDatabase[req.params.id ].longURL; 
   if(!longURL){
     return res.send("ID don't exit!");
   }
@@ -98,7 +104,7 @@ app.post("/urls", (req, res) => {
    return res.send("Please log in!")};
   console.log(req.body); // Log the POST request body to the console
   const randomString = generateRandomString();
-  urlDatabase[randomString] = req.body.longURL;
+  urlDatabase[randomString] = req.body;
   res.redirect(`/urls/${randomString}`);
 });
 
@@ -109,7 +115,7 @@ delete urlDatabase[req.params.id];
 
 app.post("/urls/:id", (req, res) => {
 
-  urlDatabase[req.params.id ] = req.body.longURL
+  urlDatabase[req.params.id ] = req.body
   res.redirect(`/urls`);
 });
 

@@ -54,6 +54,8 @@ const templateVars = {urls: urlDatabase, user: users[req.cookies["user_id"]]};
 })
 
 app.get("/urls/new", (req, res) => {
+  if(!req.cookies["user_id"]){
+    res.redirect("/login")};
   const templateVars = { user: users[req.cookies["user_id"]]};
   res.render("urls_new", templateVars);
 });
@@ -89,6 +91,8 @@ app.get("/hello", (req, res) => {
 
 //----------------------post requests--------------------
 app.post("/urls", (req, res) => {
+  if(!req.cookies["user_id"]){
+   return res.send("Please log in!")};
   console.log(req.body); // Log the POST request body to the console
   const randomString = generateRandomString();
   urlDatabase[randomString] = req.body.longURL;
@@ -108,8 +112,13 @@ app.post("/urls/:id", (req, res) => {
 
 //--------------------login-register-----------------
 app.get("/login", (req, res) => {
+  if(req.cookies["user_id"]){
+  res.redirect(`/urls`)};
+
   const templateVars = { user: users[req.cookies["user_id"]]};
   res.render("login", templateVars);
+
+
 });
 
 
@@ -138,7 +147,9 @@ app.post("/logout", (req, res) => {
 });
 
 app.get("/register", (req, res) => {
-  const templateVars = { user: users[req.cookies["user_id"]]};
+    if(req.cookies["user_id"]){
+    res.redirect(`/urls`)};
+    const templateVars = { user: users[req.cookies["user_id"]]};
   res.render("register", templateVars);
 });
 
@@ -164,15 +175,8 @@ app.post("/register", (req, res) => {
     password: req.body.password,
   },
   console.log(users);
-
-
-
-
   res.redirect(`/urls`);
 });
-
-
-
 
 //------------------listen-------------------------
 app.listen(PORT, () => {

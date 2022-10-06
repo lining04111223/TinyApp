@@ -23,7 +23,7 @@
 
     <main style="margin: 1em;">
       <h1>Create Account</h1>
-      <form class="form-inline" action="/register" method="POST">
+      <form class="form-group" action="/register" method="POST">
         <div class="form-group mb-2">
           <label for="email">Email Address</label>
           <input
@@ -31,19 +31,17 @@
             type="email"
             name="email"
             placeholder="Enter email"
-            style="width: 300px; margin: 1em"
+            style="width: 300px;"
           />
-          <br/>
-
+        
           <label for="password">Password</label>
           <input
             class="form-control"
             type="password"
             name="password"
             placeholder="Password"
-            style="width: 300px; margin: 1em"
+            style="width: 300px;"
           />
-          <br/>
           <button type="submit" class="btn btn-primary">Register</button>
         </div>
       </form>

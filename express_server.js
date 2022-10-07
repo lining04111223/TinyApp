@@ -6,9 +6,8 @@ const morgan = require('morgan');
 const {getUserByEmail} = require('./helpers');
 const PORT = 8080;
 
-app.set("view engine", "ejs");
-
 //--------------------middleware-----------------------
+app.set("view engine", "ejs");
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieSession({
   name: 'session',
@@ -60,10 +59,9 @@ const users = {
 //--------------------get requests---------------------
 app.get("/urls",(req, res) => {
   if(!req.session.user_id){
-    return res.send("Please log in!")};
+    return res.send('<html><body>Please <a href="/login">Login</a> !</body></html>')};
     
   const templateVars = {urls:urlsForUser(req.session.user_id) , user: users[req.session.user_id]};
-  console.log("user--id",req.session.user_id);
   res.render("urls_index", templateVars);
 })
 
@@ -76,27 +74,23 @@ app.get("/urls/new", (req, res) => {
 
 app.get("/urls/:id", (req, res) => {
   if(!req.session.user_id){
-    return res.send("Please log in!")};
+    return res.send('<html><body>Please <a href="/login">Login</a> !</body></html>')};
   const urlobj = urlDatabase[req.params.id]
   if(!urlobj){
     return res.send("ID don't exit!");
   }
-
   const longURL = urlobj.longURL;
-  console.log("url",urlobj);
-  
   if(urlobj.userID !== req.session.user_id){
     return res.status(400).send("URL does not belong to you!")
   }
 
   const templateVars = { id: req.params.id, longURL: longURL, user: users[req.session.user_id]};
   res.render("urls_show", templateVars);
-  console.log('longurl1',longURL);
 });
 
 app.get("/u/:id", (req, res) => {
   if(!req.session.user_id){
-    return res.send("Please log in!")};
+    return res.send('<html><body>Please <a href="/login">Login</a> !</body></html>')};
   const urlobj = urlDatabase[req.params.id]
   if(!urlobj){
     return res.send("ID don't exit!");
@@ -105,9 +99,7 @@ app.get("/u/:id", (req, res) => {
     return res.status(400).send("URL does not belong to you!")
   }
   const longURL = urlobj.longURL;
-  const templateVars = { id: req.params.id, longURL: longURL, user: users[req.session.user_id]};
   res.redirect(longURL);
-  console.log('longurl2',longURL);
 });
 
 //--------------------first test-----------------------
@@ -123,23 +115,19 @@ app.get("/hello", (req, res) => {
 //--------------------post requests--------------------
 app.post("/urls", (req, res) => {
   if(!req.session.user_id){
-   return res.send("Please log in!")};
-  console.log(req.body); // Log the POST request body to the console
+   return res.send('<html><body>Please <a href="/login">Login</a> !</body></html>')};
   const randomString = generateRandomString();
   urlDatabase[randomString] = {
     longURL: req.body.longURL,
     userID: req.session.user_id,
   }
-  console.log("req.body",req.body);
-  console.log("urldatabase",urlDatabase);
   res.redirect(`/urls/${randomString}`);
 });
 
 app.post("/urls/:id/delete", (req, res) => {
   if(!req.session.user_id){
-    return res.send("Please log in!")};
+    return res.send('<html><body>Please <a href="/login">Login</a> !</body></html>')};
   const urlobj = urlDatabase[req.params.id]
-  console.log("urlobj",urlobj);
   if(!urlobj){
     return res.send("ID don't exit!");
   }
@@ -152,7 +140,7 @@ app.post("/urls/:id/delete", (req, res) => {
 
 app.post("/urls/:id", (req, res) => {
   if(!req.session.user_id){
-    return res.send("Please log in!")};
+    return res.send('<html><body>Please <a href="/login">Login</a> !</body></html>')};
   const urlobj = urlDatabase[req.params.id]
   if(!urlobj){
     return res.send("ID don't exit!");
@@ -168,7 +156,6 @@ app.post("/urls/:id", (req, res) => {
 app.get("/login", (req, res) => {
   if(req.session.user_id){
   return res.redirect(`/urls`)};
-
   const templateVars = { user: users[req.session.user_id]};
   res.render("login", templateVars);
 });
@@ -177,8 +164,6 @@ app.post("/login", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;  
   const databaseUser = getUserByEmail(email, users);
-  const ckeckpassword = bcrypt.compareSync(password, databaseUser.password);
-
   //Login Errors
   if (!email || !password) {
     return res.status(400).send('Please insert email and password!');
@@ -186,6 +171,7 @@ app.post("/login", (req, res) => {
   if (!databaseUser) {
     return res.status(403).send('No user registered with the email!');
   }
+  const ckeckpassword = bcrypt.compareSync(password, databaseUser.password);
   if (!ckeckpassword) {
     return res.status(403).send('Password is not correct!');
   }
@@ -194,42 +180,37 @@ app.post("/login", (req, res) => {
 });
 
 app.post("/logout", (req, res) => {
-
   req.session = null;
   res.redirect(`/urls`);
 });
 
 app.get("/register", (req, res) => {
-    if(req.session.user_id){
+  if(req.session.user_id){
     return res.redirect(`/urls`)};
-    const templateVars = { user: users[req.session.user_id]};
+  const templateVars = { user: users[req.session.user_id]};
   res.render("register", templateVars);
 });
 
 app.post("/register", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
-  const salt = bcrypt.genSaltSync(10);
-  const hash = bcrypt.hashSync(password, salt);
   //Registration Errors
-  if (!email || !hash) {
+  if (!email || !password) {
     return res.status(400).send('Please insert email and password!');
   }
   const databaseUser = getUserByEmail(email, users);
   if (databaseUser) {
     return res.status(400).send('Email is already used!');
   }
-
+  const salt = bcrypt.genSaltSync(10);
+  const hash = bcrypt.hashSync(password, salt);
   const userID = generateRandomString();
   req.session.user_id = userID;
-  console.log("user_id", req.session.user_id);
-  console.log("userID", userID);
   users[userID]={
     id: userID,
     email: email,
     password: hash,
   },
-  console.log(users);
   res.redirect(`/urls`);
 });
 

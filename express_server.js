@@ -75,7 +75,7 @@ app.get("/urls/new", (req, res) => {
 app.get("/urls/:id", (req, res) => {
   if(!req.session.user_id){
     return res.send('<html><body>Please <a href="/login">Login</a> !</body></html>')};
-  const urlobj = urlDatabase[req.params.id]
+  const urlobj = urlDatabase[req.params.id];
   if(!urlobj){
     return res.send("ID don't exit!");
   }
@@ -91,7 +91,7 @@ app.get("/urls/:id", (req, res) => {
 app.get("/u/:id", (req, res) => {
   if(!req.session.user_id){
     return res.send('<html><body>Please <a href="/login">Login</a> !</body></html>')};
-  const urlobj = urlDatabase[req.params.id]
+  const urlobj = urlDatabase[req.params.id];
   if(!urlobj){
     return res.send("ID don't exit!");
   };
@@ -141,7 +141,7 @@ app.post("/urls/:id/delete", (req, res) => {
 app.post("/urls/:id", (req, res) => {
   if(!req.session.user_id){
     return res.send('<html><body>Please <a href="/login">Login</a> !</body></html>')};
-  const urlobj = urlDatabase[req.params.id]
+  const urlobj = urlDatabase[req.params.id];
   if(!urlobj){
     return res.send("ID don't exit!");
   }

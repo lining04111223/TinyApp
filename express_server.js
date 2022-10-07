@@ -2,33 +2,25 @@ const express = require("express");
 const app = express();
 const cookieSession = require('cookie-session')
 const bcrypt = require("bcryptjs");
-//const morgan = require('morgan');
+const morgan = require('morgan');
+const {getUserByEmail} = require('./helpers');
 const PORT = 8080;
 
 app.set("view engine", "ejs");
 
-//---------------middleware---------------------
+//--------------------middleware-----------------------
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieSession({
   name: 'session',
   keys: ['secret'],
   maxAge: 24 * 60 * 60 * 1000 // 24 hours
 }))
-//app.use(morgan('dev'));
+app.use(morgan('dev'));
 
-//--------------function------------------------------
+//--------------------function-------------------------
 const generateRandomString = () => {
   return Math.random().toString(36).substring(2, 8);
 };
-
-const getUserByEmail = function (email) {
-  for (let userID in users) {
-    if (users[userID].email === email) {
-      return users[userID];
-    }
-  }
-  return null;
-}
 
 const urlsForUser = function (userID) {
   let obj ={};
@@ -40,7 +32,7 @@ const urlsForUser = function (userID) {
   return obj;
 }
 
-//-------------------database----------------------------------
+//--------------------database-------------------------
 const urlDatabase = {
   b6UTxQ: {
     longURL: "https://www.tsn.ca",
@@ -65,7 +57,7 @@ const users = {
   },
 };
 
-//----------------------get requests----------------------------
+//--------------------get requests---------------------
 app.get("/urls",(req, res) => {
   if(!req.session.user_id){
     return res.send("Please log in!")};
@@ -118,7 +110,7 @@ app.get("/u/:id", (req, res) => {
   console.log('longurl2',longURL);
 });
 
-//------------------------first test----------------------
+//--------------------first test-----------------------
 app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
 });
@@ -128,7 +120,7 @@ app.get("/hello", (req, res) => {
   res.render("hello_world", templateVars);
 });
 
-//----------------------post requests--------------------
+//--------------------post requests--------------------
 app.post("/urls", (req, res) => {
   if(!req.session.user_id){
    return res.send("Please log in!")};
@@ -172,7 +164,7 @@ app.post("/urls/:id", (req, res) => {
   res.redirect(`/urls`);
 });
 
-//--------------------login-register-----------------
+//--------------------login-register-------------------
 app.get("/login", (req, res) => {
   if(req.session.user_id){
   return res.redirect(`/urls`)};
@@ -184,7 +176,7 @@ app.get("/login", (req, res) => {
 app.post("/login", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;  
-  const databaseUser = getUserByEmail(email);
+  const databaseUser = getUserByEmail(email, users);
   const ckeckpassword = bcrypt.compareSync(password, databaseUser.password);
 
   //Login Errors
@@ -223,7 +215,7 @@ app.post("/register", (req, res) => {
   if (!email || !hash) {
     return res.status(400).send('Please insert email and password!');
   }
-  const databaseUser = getUserByEmail(email);
+  const databaseUser = getUserByEmail(email, users);
   if (databaseUser) {
     return res.status(400).send('Email is already used!');
   }
@@ -241,7 +233,7 @@ app.post("/register", (req, res) => {
   res.redirect(`/urls`);
 });
 
-//------------------listen-------------------------
+//--------------------listen---------------------------
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });

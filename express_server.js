@@ -85,20 +85,34 @@ app.get("/urls/new", (req, res) => {
 app.get("/urls/:id", (req, res) => {
   if(!req.session.user_id){
     return res.send("Please log in!")};
-  if(Object.keys(urlsForUser(req.session.user_id)).length===0){
+  const urlobj = urlDatabase[req.params.id]
+  if(!urlobj){
+    return res.send("ID don't exit!");
+  }
+
+  const longURL = urlobj.longURL;
+  console.log("url",urlobj);
+  
+  if(urlobj.userID !== req.session.user_id){
     return res.status(400).send("URL does not belong to you!")
-    }
-  const longURL = urlDatabase[req.params.id].longURL;
+  }
+
   const templateVars = { id: req.params.id, longURL: longURL, user: users[req.session.user_id]};
   res.render("urls_show", templateVars);
   console.log('longurl1',longURL);
 });
 
 app.get("/u/:id", (req, res) => {
-  const longURL = urlDatabase[req.params.id].longURL; 
-  if(!longURL){
+  if(!req.session.user_id){
+    return res.send("Please log in!")};
+  const urlobj = urlDatabase[req.params.id]
+  if(!urlobj){
     return res.send("ID don't exit!");
+  };
+  if(urlobj.userID !== req.session.user_id){
+    return res.status(400).send("URL does not belong to you!")
   }
+  const longURL = urlobj.longURL;
   const templateVars = { id: req.params.id, longURL: longURL, user: users[req.session.user_id]};
   res.redirect(longURL);
   console.log('longurl2',longURL);
@@ -130,18 +144,31 @@ app.post("/urls", (req, res) => {
 });
 
 app.post("/urls/:id/delete", (req, res) => {
-  if(Object.keys(urlsForUser(req.session.user_id)).length===0){
+  if(!req.session.user_id){
+    return res.send("Please log in!")};
+  const urlobj = urlDatabase[req.params.id]
+  console.log("urlobj",urlobj);
+  if(!urlobj){
+    return res.send("ID don't exit!");
+  }
+  if(urlobj.userID !== req.session.user_id){
     return res.status(400).send("URL does not belong to you!")
-    }
+  }
   delete urlDatabase[req.params.id];
-    res.redirect(`/urls`);
+  res.redirect(`/urls`);
 });
 
 app.post("/urls/:id", (req, res) => {
-  if(Object.keys(urlsForUser(req.session.user_id)).length===0){
+  if(!req.session.user_id){
+    return res.send("Please log in!")};
+  const urlobj = urlDatabase[req.params.id]
+  if(!urlobj){
+    return res.send("ID don't exit!");
+  }
+  if(urlobj.userID !== req.session.user_id){
     return res.status(400).send("URL does not belong to you!")
-    }
-  urlDatabase[req.params.id ].longURL = req.body.longURL;
+  }
+  urlobj.longURL = req.body.longURL;
   res.redirect(`/urls`);
 });
 

@@ -58,6 +58,7 @@ const users = {
 };
 
 //--------------------get requests---------------------
+//if user is not logged in,return error!
 app.get("/urls",(req, res) => {
   if(!req.session.user_id){
     return res.send('<html><body>Please <a href="/login">Login</a> !</body></html>')};
@@ -66,12 +67,14 @@ app.get("/urls",(req, res) => {
   res.render("urls_index", templateVars);
 })
 
+//1 if not logged in,redirect to /login; 2 if logged in,redirect to /urls!
 app.get("/",(req, res) => {
   if(!req.session.user_id){
     res.redirect(`/login`);};
   res.redirect(`/urls`);
 });
 
+//create new tinyurl.
 app.get("/urls/new", (req, res) => {
   if(!req.session.user_id){
     return res.redirect("/login")};
@@ -79,6 +82,7 @@ app.get("/urls/new", (req, res) => {
   res.render("urls_new", templateVars);
 });
 
+//1 if user is not logged in; 2 if given ID does not exist;3 not own the URL; return relevant error message!
 app.get("/urls/:id", (req, res) => {
   if(!req.session.user_id){
     return res.send('<html><body>Please <a href="/login">Login</a> !</body></html>')};
@@ -95,6 +99,7 @@ app.get("/urls/:id", (req, res) => {
   res.render("urls_show", templateVars);
 });
 
+//if the id does not exist,return error!
 app.get("/u/:id", (req, res) => {
   const urlobj = urlDatabase[req.params.id];
   if(!urlobj){
@@ -118,7 +123,7 @@ app.get("/hello", (req, res) => {
 app.post("/urls", (req, res) => {
   if(!req.session.user_id){
    return res.send('<html><body>Please <a href="/login">Login</a> !</body></html>')};
-  const randomString = generateRandomString();
+  const randomString = generateRandomString();//create random new id
   urlDatabase[randomString] = {
     longURL: req.body.longURL,
     userID: req.session.user_id,
@@ -126,6 +131,7 @@ app.post("/urls", (req, res) => {
   res.redirect(`/urls/${randomString}`);
 });
 
+//1 if user is not logged in; 2 if given ID does not exist;3 not own the URL; return relevant error message!
 app.post("/urls/:id/delete", (req, res) => {
   if(!req.session.user_id){
     return res.send('<html><body>Please <a href="/login">Login</a> !</body></html>')};
@@ -162,6 +168,7 @@ app.get("/login", (req, res) => {
   res.render("login", templateVars);
 });
 
+//1 No email or password; 2 wrong user; 3 wrong password; return relevant error message!
 app.post("/login", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;  
@@ -193,10 +200,10 @@ app.get("/register", (req, res) => {
   res.render("register", templateVars);
 });
 
+////1 No email or password; 2 email was used; return relevant error message!
 app.post("/register", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
-  //Registration Errors
   if (!email || !password) {
     return res.status(400).send('Please insert email and password!');
   }

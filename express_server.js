@@ -17,6 +17,7 @@ app.use(cookieSession({
 app.use(morgan('dev'));
 
 //--------------------function-------------------------
+//
 const generateRandomString = () => {
   return Math.random().toString(36).substring(2, 8);
 };
@@ -65,6 +66,12 @@ app.get("/urls",(req, res) => {
   res.render("urls_index", templateVars);
 })
 
+app.get("/",(req, res) => {
+  if(!req.session.user_id){
+    res.redirect(`/login`);};
+  res.redirect(`/urls`);
+});
+
 app.get("/urls/new", (req, res) => {
   if(!req.session.user_id){
     return res.redirect("/login")};
@@ -89,15 +96,10 @@ app.get("/urls/:id", (req, res) => {
 });
 
 app.get("/u/:id", (req, res) => {
-  if(!req.session.user_id){
-    return res.send('<html><body>Please <a href="/login">Login</a> !</body></html>')};
   const urlobj = urlDatabase[req.params.id];
   if(!urlobj){
     return res.send("ID don't exit!");
   };
-  if(urlobj.userID !== req.session.user_id){
-    return res.status(400).send("URL does not belong to you!")
-  }
   const longURL = urlobj.longURL;
   res.redirect(longURL);
 });

@@ -3,7 +3,7 @@ const app = express();
 const cookieSession = require('cookie-session')
 const bcrypt = require("bcryptjs");
 const morgan = require('morgan');
-const {getUserByEmail} = require('./helpers');
+const {getUserByEmail, generateRandomString, urlsForUser} = require('./helpers');
 const PORT = 8080;
 
 //--------------------middleware-----------------------
@@ -15,22 +15,6 @@ app.use(cookieSession({
   maxAge: 24 * 60 * 60 * 1000 // 24 hours
 }))
 app.use(morgan('dev'));
-
-//--------------------function-------------------------
-//
-const generateRandomString = () => {
-  return Math.random().toString(36).substring(2, 8);
-};
-
-const urlsForUser = function (userID) {
-  let obj ={};
-  for (let id in urlDatabase){
-    if(urlDatabase[id].userID === userID){
-    obj[id] = urlDatabase[id].longURL; 
-    }
-  }
-  return obj;
-}
 
 //--------------------database-------------------------
 const urlDatabase = {
@@ -63,14 +47,14 @@ app.get("/urls",(req, res) => {
   if(!req.session.user_id){
     return res.send('<html><body>Please <a href="/login">Login</a> !</body></html>')};
     
-  const templateVars = {urls:urlsForUser(req.session.user_id) , user: users[req.session.user_id]};
+  const templateVars = {urls:urlsForUser(req.session.user_id, urlDatabase) , user: users[req.session.user_id]};
   res.render("urls_index", templateVars);
 })
 
 //1 if not logged in,redirect to /login; 2 if logged in,redirect to /urls!
 app.get("/",(req, res) => {
   if(!req.session.user_id){
-    res.redirect(`/login`);};
+  return  res.redirect(`/login`);};
   res.redirect(`/urls`);
 });
 
